@@ -1,0 +1,7 @@
+#!/usr/bin/env php
+<?php
+// argument
+
+print("Server run on http://localhost:8080");
+
+exec("php -S localhost:8080");

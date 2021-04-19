@@ -1,0 +1,103 @@
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+class {{ className_controller }} extends CI_Controller {
+
+	private $table1 = '{{ table_name }}';
+
+	public function __construct()
+	{
+		parent::__construct();
+        //Cek_login::ceklogin();
+		$this->load->model('Createtable');
+		$this->load->model('Datatable_gugus');
+	}
+
+	public function index()
+	{
+        $this->Createtable->location('admin/{{ className }}/table_show');
+        $this->Createtable->table_name('tableku');
+        $this->Createtable->create_row({{ table_head }});
+        $this->Createtable->order_set('0, {{ total_row }}');
+		$show = $this->Createtable->create();
+
+		$data['datatable'] = $show;
+        $this->load->view('templateadmin/head');
+        $this->load->view('admin/{{ className }}/view', $data);
+        $this->load->view('templateadmin/footer');
+	}
+
+	public function table_show($action = 'show', $keyword = '')
+	{
+		if ($action == "show") {
+        
+            if (isset($_POST['order'])): $setorder = $_POST['order']; else: $setorder = ''; endif;
+
+            $this->Datatable_gugus->datatable(
+                [
+                    "table" => $this->table1,
+                    "select" => [
+						"*"
+					],
+                    'where' => [
+                        ['delete_set', '=', '0']
+                    ],
+                    'limit' => [
+                        'start' => post('start'),
+                        'end' => post('length')
+                    ],
+                    'search' => [
+                        'value' => $this->Datatable_gugus->search(),
+                        'row' => {{ search }}
+                    ],
+                    'table-draw' => post('draw'),
+                    'table-show' => [
+                        'key' => '{{ keys }}',
+                        'data' => {{ search }}
+                    ],
+                    "action" => "standart",
+                    'order' => [
+                        'order-default' => ['{{ keys }}', 'ASC'],
+                        'order-data' => $setorder,
+                        'order-option' => {{ order }},
+                    ],
+                    {{custome}}
+                ]
+            );
+            $this->Datatable_gugus->table_show();
+        }elseif ($action == "update") {
+            $data_row = $this->db->query("SELECT * FROM ".$this->table1." WHERE {{ keys }} = '".$keyword."'")->row();
+            $data['form_data'] = $data_row;
+            $this->load->view('templateadmin/head');
+            $this->load->view('admin/{{ className }}/edit', $data);
+            $this->load->view('templateadmin/footer');
+        }elseif ($action == "delete") {
+            $hapus_data = $this->db->query("UPDATE ".$this->table1." SET delete_set = '1' WHERE {{ keys }} = '".post("id")."'");
+        }
+    }
+
+    public function tambah_data()
+    {
+        $this->load->view('templateadmin/head');
+        $this->load->view('admin/{{ className }}/tambah');
+        $this->load->view('templateadmin/footer');
+    }
+
+
+    public function simpan(){
+        {{ simpan_control }}
+
+        if($simpan){
+            redirect('admin/{{ link }}');
+        }
+    }
+
+    public function update(){
+        {{ update_control }}
+
+        if($simpan){
+            redirect('admin/{{ link }}');
+        }
+    }
+    
+}
